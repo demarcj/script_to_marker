@@ -61,6 +61,8 @@ interface CompItem {
   layer(index: number): Layer;
   /** Finds the first layer with this name (topmost match). Returns null if not found. */
   layer(name: string): Layer | null;
+
+  markerProperty: MarkerProperty;
 }
 
 
@@ -161,6 +163,7 @@ interface Layer {
   moveToEnd(): void;
 
   // Properties
+  property(name: `Source Text`): Property;
   property(nameOrIndex: string | number): Property | PropertyGroup;
 }
 
@@ -171,10 +174,11 @@ interface AVLayer extends Layer {
   collapseTransformation: boolean;
   property(name: "ADBE Time Remapping"): TimeRemapProperty;
   timeRemapEnabled: boolean;
+  marker: MarkerProperty;
 }
 
 interface TextLayer extends AVLayer {
-  property(name: "Source Text"): Property;
+  property(name: string): Property;
 }
 
 interface ShapeLayer extends AVLayer {}
@@ -189,7 +193,8 @@ interface Property {
   keyTime(index: number): number;
   keyValue(index: number): any;
   removeKey(index: number): void;
-
+  property(name: string): Property;
+  expression?: string;
   isTimeVarying: boolean;
 }
 
@@ -282,7 +287,46 @@ declare var ParagraphJustification: {
   LEFT_JUSTIFY: number;
   CENTER_JUSTIFY: number;
   RIGHT_JUSTIFY: number;
-};
+}
+
+interface File {
+  absoluteURI: string;
+  exists: boolean;
+  encoding: string;
+  eof: boolean;
+  error: string;
+
+  open(mode: "r" | "w" | "e"): boolean;
+  close(): boolean;
+  read(): string;
+  readln(): string;
+  write(content: string): boolean;
+  remove(): boolean;
+}
+
+declare var File: {
+  new(path?: string): File;
+  openDialog(prompt?: string, filter?: string): File | null;
+  saveDialog(prompt?: string, filter?: string): File | null;
+}
+
+interface MarkerProperty extends Property{
+  numKeys: number;
+  keyValue(index: number): MarkerValue;
+  keyTime(index: number): number;
+  setValueAtTime(time: number, value: MarkerValue): void;
+}
+
+declare class MarkerValue extends MarkerProperty {
+  constructor(comment?: string);
+  comment: string;
+  chapter: string;
+  cuePointName: string;
+  url: string;
+  frameTarget: string;
+  duration: number;
+  clone(): MarkerValue;
+}
 
 // Make the global `app` typed
 declare var app: App;

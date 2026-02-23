@@ -132,6 +132,7 @@ Edit `CSXS/manifest.xml` to enable/disable support for different Adobe applicati
 1. Open the Adobe application (After Effects by default)
 2. Go to **Windows → Framework** to open the panel
 3. Click **"Call ExtendScript"** to execute ExtendScript code
+4. (new) Use **"Clear All Comments"** to remove every marker in the active comp
 
 ### Extending the Panel
 

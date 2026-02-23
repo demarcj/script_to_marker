@@ -62,21 +62,12 @@
 				</Lifecycle>
 				<UI>
 					<Type>Panel</Type>
-					<Menu>Framework</Menu>
+					<Menu>Script To Marker</Menu>
 					<Geometry>
 						<Size>
 							<Height>300</Height>
 							<Width>300</Width>
-						</Size>
-                    <!--<MinSize>
-                            <Height>550</Height>
-                            <Width>400</Width>
-                        </MinSize>
-                        <MaxSize>
-                            <Height>550</Height>
-                            <Width>400</Width>
-                        </MaxSize>-->
-                        
+						</Size>     
 					</Geometry>
 					<Icons>
 						<Icon Type="Normal">./icons/iconNormal.png</Icon>

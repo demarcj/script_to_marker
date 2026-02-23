@@ -269,7 +269,250 @@ if (typeof JSON.stringify !== "function") {
   };
 }
 
+// library/library.ts
+var project = app.project;
+var active_comp = function() {
+  return project == null ? void 0 : project.activeItem;
+};
+var time = function() {
+  var _a;
+  return ((_a = active_comp()) == null ? void 0 : _a.time) || 0;
+};
+var selected_layers = function() {
+  var _a;
+  return (_a = active_comp()) == null ? void 0 : _a.selectedLayers;
+};
+var selected_layer = function() {
+  var _a;
+  return (_a = selected_layers()) == null ? void 0 : _a[0];
+};
+var all_layers = function() {
+  var _a;
+  return Array((_a = active_comp()) == null ? void 0 : _a.layers.length).fill(void 0).map(function(layer, i) {
+    var _a2;
+    return (_a2 = active_comp()) == null ? void 0 : _a2.layer(i + 1);
+  });
+};
+var has_active_comp = function() {
+  try {
+    if (!active_comp()) {
+      throw new Error("No comp was selected");
+    }
+    return true;
+  } catch (e) {
+    alert("Please select a comp");
+    return false;
+  }
+};
+var has_layers = function() {
+  var _a;
+  try {
+    if (!((_a = active_comp()) == null ? void 0 : _a.layers)) {
+      throw new Error("No layer was selected");
+    }
+    return true;
+  } catch (e) {
+    alert("Please add layers to the active comp");
+    return false;
+  }
+};
+var has_selected_layer = function() {
+  var _a;
+  try {
+    if (!((_a = selected_layers()) == null ? void 0 : _a.length)) {
+      throw new Error("No layer selected");
+    }
+    return true;
+  } catch (e) {
+    alert("Please select a layer");
+    return false;
+  }
+};
+var has_single_selected_layer = function() {
+  var _a, _b;
+  try {
+    if (((_a = selected_layers()) == null ? void 0 : _a.length) && !(((_b = selected_layers()) == null ? void 0 : _b.length) === 1)) {
+      throw new Error("Has multiple layers selected");
+    }
+    return true;
+  } catch (e) {
+    alert("Please only select one layer");
+    return false;
+  }
+};
+var is_text_layer_empty = function() {
+  var _a;
+  try {
+    if (!((_a = selected_layer()) == null ? void 0 : _a.property("Source Text")).value.text.length) {
+      throw new Error("Text layer contains no text");
+    }
+    return true;
+  } catch (e) {
+    alert("This text layer is empty. Please add text to this layer");
+    return false;
+  }
+};
+var is_text_layer = function() {
+  var _a;
+  try {
+    if (((_a = selected_layer()) == null ? void 0 : _a.property("Source Text")) === null) {
+      throw new Error("No text layer was selected");
+    }
+    return true;
+  } catch (e) {
+    alert("Please select a text layer");
+    return false;
+  }
+};
+var check_error = function(check_func) {
+  return check_func.some(function(confirm) {
+    return !confirm();
+  });
+};
+var error_message = function(name) {
+  return alert("\n  The ".concat(name.length ? name + " " : "", "operation failed.\n  Some changes may have been applied.\n  Use Undo to revert the action if necessary. \n"));
+};
+var print = (function() {
+  var arr = [];
+  for (var i = 0; i < arguments.length; i++) {
+    arr.push(arguments[i]);
+  }
+  alert(arr.join("\n"));
+});
+
 // index.ts
-var sayHello = function() {
-  return alert("Hello from ExtendScript");
+var text_layer_express = '\n  m = thisComp.marker;\n\n  if (m.numKeys == 0) {\n    "";\n  } else {\n    k = m.nearestKey(time);\n    if (k.time > time && k.index > 1) k = m.key(k.index - 1);\n\n    start = k.time;\n    end = k.time + k.duration;\n\n    (time >= start && time < end) ? k.comment : "";\n  }\n';
+var get_script = function() {
+  try {
+    var file = File.openDialog("Select a text file", "*.txt");
+    if (file === null) {
+      return;
+    }
+    file.open("r");
+    var content = file.read();
+    file.close();
+    var content_list = content.split("\n").filter(function(txt) {
+      return (txt == null ? void 0 : txt.length) && txt.length > 0;
+    });
+    var content_map = {};
+    var num = "";
+    var time_stamp = "";
+    content_list.forEach(function(item, i) {
+      var index = (i + 1) % 3;
+      if (index % 3 === 0) {
+        content_map[parseInt(num)] = {
+          time: time_stamp,
+          text: item
+        };
+        return;
+      }
+      if (index % 2 === 0) {
+        time_stamp = item;
+        return;
+      }
+      num = item;
+    });
+    return content_map;
+  } catch (e) {
+    alert("Couldn't retreive the file.");
+  }
+};
+var timestampToSeconds = function(stamp) {
+  var normalized = stamp.replace(",", ".");
+  var parts = normalized.split(":");
+  if (parts.length !== 3) {
+    return 0;
+  }
+  var hours = parseInt(parts[0], 10) || 0;
+  var mins = parseInt(parts[1], 10) || 0;
+  var secsAndMs = parts[2].split(".");
+  var secs = parseInt(secsAndMs[0], 10) || 0;
+  var ms = parseInt(secsAndMs[1], 10) || 0;
+  return hours * 3600 + mins * 60 + secs + ms / 1e3;
+};
+var create_comment = function(content) {
+  try {
+    var content_list = Object.values(content);
+    content_list.forEach(function(item, i) {
+      var _a;
+      var duration = item.time.split(" --> ");
+      var start_dur = timestampToSeconds(duration[0]);
+      var end_dur = timestampToSeconds(duration[1]);
+      var marker = new MarkerValue(item.text);
+      marker.duration = end_dur - start_dur;
+      marker.cuePointName = "script_to_marker";
+      (_a = active_comp()) == null ? void 0 : _a.markerProperty.setValueAtTime(start_dur, marker);
+    });
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+var create_text_layer = function() {
+  try {
+    var textLayer = active_comp().layers.addText("");
+    textLayer.name = "Script";
+    var textSource = active_comp().layer(1).property("Source Text");
+    var textVal = textSource.value;
+    textVal.justification = ParagraphJustification.CENTER_JUSTIFY;
+    var textDoc = textLayer.property("ADBE Text Properties").property("ADBE Text Document");
+    textDoc.expression = text_layer_express;
+    textSource.setValue(textVal);
+  } catch (e) {
+    alert("Something wrong happened when trying to create text layers");
+  }
+};
+var clear_script = function() {
+  try {
+    var comp = active_comp();
+    if (!comp) {
+      return false;
+    }
+    var markers = comp == null ? void 0 : comp.markerProperty;
+    var index = 1;
+    Array(markers.numKeys).fill(void 0).forEach(function(marker, i) {
+      var _a;
+      var cue = (_a = markers.keyValue(index)) == null ? void 0 : _a.cuePointName;
+      if (cue && cue === "script_to_marker") {
+        markers.removeKey(index);
+        return;
+      }
+      index += 1;
+    });
+  } catch (e) {
+    alert("Something wrong happened when trying to delete the markers");
+  }
+};
+var handle_clear_script = function() {
+  app.beginUndoGroup("Delete All Comments");
+  try {
+    if (check_error([has_active_comp])) {
+      return;
+    }
+    clear_script();
+  } catch (e) {
+    error_message("Delete All Comments");
+  } finally {
+    app.endUndoGroup();
+  }
+};
+var script_to_marker = function() {
+  app.beginUndoGroup("Script to Marker");
+  try {
+    if (check_error([has_active_comp])) {
+      return;
+    }
+    var content = get_script();
+    if (!content) {
+      return;
+    }
+    if (!create_comment(content)) {
+      return;
+    }
+    create_text_layer();
+  } catch (e) {
+    error_message("Script to Marker");
+  } finally {
+    app.endUndoGroup();
+  }
 };
