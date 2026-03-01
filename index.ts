@@ -7,16 +7,16 @@ import * as lib from "./library/library";
 type script_data = Record<number, {time: string, text: string}>;
 
 var text_layer_express = `
-  m = thisComp.marker;
+  const m = thisComp.marker;
 
   if (m.numKeys == 0) {
     "";
   } else {
-    k = m.nearestKey(time);
+    let k = m.nearestKey(time);
     if (k.time > time && k.index > 1) k = m.key(k.index - 1);
 
-    start = k.time;
-    end = k.time + k.duration;
+    let start = k.time;
+    let end = k.time + k.duration;
 
     (time >= start && time < end) ? k.comment : "";
   }
@@ -24,7 +24,7 @@ var text_layer_express = `
 
 var get_script = (): script_data | undefined => {
   try {
-    var file = File.openDialog("Select a text file", "*.txt");
+    var file = File.openDialog(`Select a text file`, `*.txt;*.srt`);
   
     if (file === null) {
       return;

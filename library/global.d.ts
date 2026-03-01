@@ -1,4 +1,5 @@
 // app.d.ts
+type AllLayerType = Layer & AVLayer & TextLayer & ShapeLayer;
 
 interface App {
   // --- Core ---
@@ -52,19 +53,23 @@ interface CompItem {
   workAreaDuration: number;
   workAreaStart: number;
 
-  selectedLayers: Layer[];
+  selectedLayers: AllLayerType[];
   layers: LayerCollection;
 
   time: number;
 
   /** 1-based index */
-  layer(index: number): Layer;
+  layer(index: number): AllLayerType;
   /** Finds the first layer with this name (topmost match). Returns null if not found. */
   layer(name: string): Layer | null;
 
   markerProperty: MarkerProperty;
 }
 
+declare var CompItem: {
+  prototype: CompItem;
+  new (...args: any[]): CompItem;
+};
 
 interface Preferences {
   getPrefAsString(section: string, key: string): string;
@@ -132,13 +137,17 @@ interface LayerCollection {
 interface Layer {
   index: number;
   name: string;
+  matchName: string;
+
   enabled: boolean;
   shy: boolean;
   locked: boolean;
   selected: boolean;
   solo: boolean;
+  hasVideo: boolean;
+  hasAudio: boolean;
 
-  parent: Layer | null;
+  parent: AllLayerType | null;
   hasParent: boolean;
 
   inPoint: number;
@@ -155,22 +164,22 @@ interface Layer {
   threeDLayer: boolean;
 
   // Core methods
-  duplicate(): Layer;
+  duplicate(): AllLayerType;
   remove(): void;
-  moveBefore(layer: Layer): void;
-  moveAfter(layer: Layer): void;
+  moveBefore(layer: AllLayerType): void;
+  moveAfter(layer: AllLayerType): void;
   moveToBeginning(): void;
   moveToEnd(): void;
 
   // Properties
-  property(name: `Source Text`): Property;
-  property(nameOrIndex: string | number): Property | PropertyGroup;
+  property(nameOrIndex: string | number): Property & PropertyGroup;
 }
 
 interface AVLayer extends Layer {
   source: AVItem | null;
   audioEnabled: boolean;
   motionBlur: boolean;
+  opacity: Property;
   collapseTransformation: boolean;
   property(name: "ADBE Time Remapping"): TimeRemapProperty;
   timeRemapEnabled: boolean;
@@ -178,7 +187,7 @@ interface AVLayer extends Layer {
 }
 
 interface TextLayer extends AVLayer {
-  property(name: string): Property;
+  property(name: `Source Text` | `ADBE Text Properties`): Property;
 }
 
 interface ShapeLayer extends AVLayer {}
@@ -236,7 +245,7 @@ interface PropertyGroup {
 
   numProperties: number;
 
-  property(indexOrName: number | string): Property | PropertyGroup;
+  property(indexOrName: number | string): Property & PropertyGroup;
 
   // Common AE checks
   canAddProperty?: boolean;
