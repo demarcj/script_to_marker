@@ -381,10 +381,10 @@ var print = (function() {
 });
 
 // index.ts
-var text_layer_express = '\n  m = thisComp.marker;\n\n  if (m.numKeys == 0) {\n    "";\n  } else {\n    k = m.nearestKey(time);\n    if (k.time > time && k.index > 1) k = m.key(k.index - 1);\n\n    start = k.time;\n    end = k.time + k.duration;\n\n    (time >= start && time < end) ? k.comment : "";\n  }\n';
+var text_layer_express = '\n  const m = thisComp.marker;\n\n  if (m.numKeys == 0) {\n    "";\n  } else {\n    let k = m.nearestKey(time);\n    if (k.time > time && k.index > 1) k = m.key(k.index - 1);\n\n    let start = k.time;\n    let end = k.time + k.duration;\n\n    (time >= start && time < end) ? k.comment : "";\n  }\n';
 var get_script = function() {
   try {
-    var file = File.openDialog("Select a text file", "*.txt");
+    var file = File.openDialog("Select a text file", "*.txt;*.srt");
     if (file === null) {
       return;
     }

@@ -3,13 +3,13 @@ export var active_comp = () => project?.activeItem;
 export var time = () => active_comp()?.time || 0;
 export var selected_layers = () => active_comp()?.selectedLayers;
 export var selected_layer = () => selected_layers()?.[0];
-export var all_layers: () => (Layer | undefined)[] = () => Array(active_comp()?.layers.length)
+export var all_layers: () => (AllLayerType | undefined)[] = () => Array(active_comp()?.layers.length)
   .fill(undefined)
   .map((layer, i) => active_comp()?.layer(i + 1));
 
 export var has_active_comp = (): boolean => {
   try{
-    if(!active_comp()){
+    if(!(active_comp() && active_comp() instanceof CompItem)){
       throw new Error("No comp was selected");
     }
     return true;
