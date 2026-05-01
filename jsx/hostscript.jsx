@@ -295,7 +295,7 @@ var all_layers = function() {
 };
 var has_active_comp = function() {
   try {
-    if (!active_comp()) {
+    if (!(active_comp() && active_comp() instanceof CompItem)) {
       throw new Error("No comp was selected");
     }
     return true;

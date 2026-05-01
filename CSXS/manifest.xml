@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ExtensionManifest Version="9.0" ExtensionBundleId="com.demarc.script_to_marker.panel" ExtensionBundleVersion="1.0.0"
-		ExtensionBundleName="Test" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<ExtensionManifest 
+	Version="9.0" 
+	ExtensionBundleId="com.demarc.script_to_marker.panel" 
+	ExtensionBundleVersion="1.0.0"
+	ExtensionBundleName="Script to Marker" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+>
 	<ExtensionList>
 		<Extension Id="com.demarc.script_to_marker.panel" Version="1.0.0" />
 	</ExtensionList>
